@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <title>StudyShare • collaborative student platform</title>
+    <!-- Tailwind via CDN + interceptor for beauty -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome 6 (free icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- smooth font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafcff;
+        }
+        
+        .resource-card-hover {
+            transition: transform 0.2s ease, box-shadow 0.2s;
+        }
+        
+        .resource-card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(145deg, #ffffff 0%, #f6fafe 100%);
+        }
+        
+        .comment-bubble {
+            background: #f0f4fa;
+            border-radius: 20px 20px 20px 4px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #eef2f6;
+            border-radius: 12px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 12px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="antialiased text-gray-800">
+
+    <!-- full UI prototype – frontend only, beautiful & responsive -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- === HEADER / NAVIGATION (auth aware) === -->
+        <header class="flex flex-wrap items-center justify-between gap-4 mb-8 pb-2 border-b border-indigo-100/60">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-3xl text-indigo-600"></i>
+                <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-sky-700">StudyShare</span>
+                <span class="hidden md:inline-block ml-2 px-3 py-1 bg-indigo-50 text-indigo-700 text-sm rounded-full border border-indigo-200">university community</span>
+            </div>
+
+            <!-- desktop navigation -->
+            <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+                <a href="#" class="text-indigo-800 border-b-2 border-indigo-500 pb-1">Browse</a>
+                <a href="#" class="text-gray-600 hover:text-indigo-700">Dashboard</a>
+                <a href="#" class="text-gray-600 hover:text-indigo-700">Upload</a>
+                <a href="#" class="text-gray-600 hover:text-indigo-700">Leaderboard</a>
+            </nav>
+
+            <!-- user + auth (logged in) -->
+            <div class="flex items-center gap-4">
+                <button class="hidden sm:block relative text-gray-500 hover:text-indigo-700">
+          <i class="fa-regular fa-bell text-xl"></span></i>
+          <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">3</span>
+        </button>
+                <!-- profile -->
+                <div class="flex items-center gap-3 bg-white pl-2 pr-4 py-1.5 rounded-full shadow-sm border border-gray-200/80">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-sky-400 flex items-center justify-center text-white text-sm font-semibold">
+                        JD
+                    </div>
+                    <span class="text-sm font-medium hidden sm:block">Jessica D.</span>
+                    <i class="fa-solid fa-chevron-down text-xs text-gray-500"></i>
+                </div>
+                <!-- mobile menu icon -->
+                <button class="md:hidden text-gray-700 text-xl">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+            </div>
+        </header>
+
+        <!-- === HERO / QUICK SEARCH + FILTERS – discover resources === -->
+        <section class="bg-white/70 backdrop-blur-sm rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 mb-10">
+            <div class="grid md:grid-cols-3 gap-6 items-center">
+                <div class="md:col-span-2">
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3">Find study resources, <span class="text-indigo-600">share knowledge</span></h1>
+                    <p class="text-gray-600 mb-5 max-w-xl">Notes, past exams, tutorials — everything your department needs. community driven.</p>
+                    <!-- global search -->
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <div class="flex-grow relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-gray-400"></i>
+                            <input type="text" placeholder="Search for 'linear algebra', 'CS50', 'anatomy'..." class="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 bg-white/90 shadow-sm focus:ring-2 focus:ring-indigo-300 focus:border-transparent outline-none text-sm">
+                        </div>
+                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-7 py-3 rounded-full font-medium shadow-md shadow-indigo-200 transition flex items-center gap-2">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i> Search
+            </button>
+                    </div>
+                </div>
+                <!-- stats decoration -->
+                <div class="hidden md:flex flex-col items-end justify-center">
+                    <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100/70">
+                        <div class="flex items-center gap-5">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-indigo-800">3.2k+</div>
+                                <div class="text-xs text-gray-500">resources</div>
+                            </div>
+                            <div class="h-8 w-px bg-indigo-200"></div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-indigo-800">12</div>
+                                <div class="text-xs text-gray-500">depts</div>
+                            </div>
+                            <div class="h-8 w-px bg-indigo-200"></div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-indigo-800">850+</div>
+                                <div class="text-xs text-gray-500">today</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- quick filter pills (subject, dept, year, type) -->
+            <div class="flex flex-wrap items-center gap-3 mt-8 pt-2 border-t border-gray-100">
+                <span class="text-sm font-medium text-gray-500 mr-1">Filter by:</span>
+                <select class="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm focus:ring-1 focus:ring-indigo-300 outline-none">
+          <option>All subjects</option>
+          <option>Computer Science</option><option>Mathematics</option><option>Physics</option><option>Economics</option>
+        </select>
+                <select class="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm focus:ring-1 focus:ring-indigo-300 outline-none">
+          <option>All departments</option>
+          <option>Engineering</option><option>Science</option><option>Arts</option><option>Business</option>
+        </select>
+                <select class="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm focus:ring-1 focus:ring-indigo-300 outline-none">
+          <option>Academic year</option>
+          <option>1st year</option><option>2nd year</option><option>3rd year</option><option>4th+</option>
+        </select>
+                <div class="flex gap-1">
+                    <button class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm flex items-center gap-1 border border-indigo-200 hover:bg-indigo-100"><i class="fa-regular fa-file-pdf"></i> PDF</button>
+                    <button class="bg-gray-50 text-gray-600 px-4 py-2 rounded-full text-sm flex items-center gap-1 border border-gray-200 hover:bg-gray-100"><i class="fa-regular fa-file-image"></i> Image</button>
+                    <button class="bg-gray-50 text-gray-600 px-4 py-2 rounded-full text-sm flex items-center gap-1 border border-gray-200 hover:bg-gray-100"><i class="fa-solid fa-link"></i> Link</button>
+                </div>
+                <button class="text-sm text-indigo-600 font-medium ml-auto">Reset all</button>
+            </div>
+        </section>
+
+        <!-- === MAIN GRID: left: resource feed + right: trending / top contributors === -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- LEFT: main resources list (2/3) -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- header sort/tabs -->
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2"><i class="fa-solid fa-arrow-trend-up text-indigo-500"></i> Recent resources</h2>
+                    <div class="flex gap-1 bg-gray-100/70 p-1 rounded-lg">
+                        <button class="px-4 py-1.5 text-sm rounded-md bg-white shadow-sm">Recent</button>
+                        <button class="px-4 py-1.5 text-sm rounded-md text-gray-600 hover:bg-white/50">Popular</button>
+                        <button class="px-4 py-1.5 text-sm rounded-md text-gray-600 hover:bg-white/50">Trending</button>
+                    </div>
+                </div>
+
+                <!-- ========== RESOURCE CARD 1 ========== (PDF - past exam) -->
+                <div class="bg-white rounded-2xl p-5 border border-gray-100/80 shadow-sm resource-card-hover">
+                    <div class="flex flex-wrap gap-3 sm:flex-nowrap">
+                        <!-- file icon area -->
+                        <div class="flex-shrink-0 w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center text-red-600 border border-red-100">
+                            <i class="fa-regular fa-file-pdf text-2xl"></i>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <h3 class="font-semibold text-gray-800 text-lg truncate">CS50 – past exam 2024 (with solutions)</h3>
+                                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 mt-1">
+                                        <span class="flex items-center gap-1"><i class="fa-regular fa-user"></i> Alex Rivera</span>
+                                        <span class="flex items-center gap-1"><i class="fa-regular fa-calendar"></i> 2 days ago</span>
+                                        <span class="flex items-center gap-1"><i class="fa-regular fa-folder"></i> Computer Science / 2nd year</span>
+                                        <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-medium">PDF</span>
+                                    </div>
+                                </div>
+                                <!-- bookmark icon (saved) -->
+                                <button class="text-indigo-600 bg-indigo-50 w-9 h-9 rounded-full flex items-center justify-center border border-indigo-200">
+                  <i class="fa-solid fa-bookmark"></i>
+                </button>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2 line-clamp-2">Official CS50 fall exam, includes answer key and professor notes. Great for final review.</p>
+                            <div class="flex flex-wrap items-center justify-between mt-4">
+                                <div class="flex items-center gap-4">
+                                    <button class="flex items-center gap-1.5 text-sm bg-gray-50 hover:bg-gray-100 px-4 py-1.5 rounded-full border border-gray-200 text-gray-700">
+                    <i class="fa-regular fa-thumbs-up"></i> 124
+                  </button>
+                                    <button class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-700">
+                    <i class="fa-regular fa-comment"></i> 18 comments
+                  </button>
+                                    <span class="text-sm text-gray-400 flex items-center gap-1"><i class="fa-regular fa-download"></i> 237</span>
+                                </div>
+                                <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center gap-1">Preview <i class="fa-solid fa-arrow-right text-xs"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== RESOURCE CARD 2 ========== (LINK - youtube) -->
+                <div class="bg-white rounded-2xl p-5 border border-gray-100/80 shadow-sm resource-card-hover">
+                    <div class="flex flex-wrap gap-3 sm:flex-nowrap">
+                        <div class="flex-shrink-0 w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-sky-600 border border-sky-100">
+                            <i class="fa-brands fa-youtube text-2xl"></i>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="font-semibold text-gray-800 text-lg">Organic chemistry – complete mechanism playlist</h3>
+                                    <div class="flex flex-wrap items-center gap-3 text-xs text-gray-500 mt-1">
+                                        <span class="flex items-center gap-1"><i class="fa-regular fa-user"></i> Prof. Chen (shared by Maria)</span>
+                                        <span class="flex items-center gap-1"><i class="fa-regular fa-calendar"></i> 5 days ago</span>
+                                        <span class="flex items-center gap-1"><i class="fa-regular fa-folder"></i> Chemistry / 2nd year</span>
+                                        <span class="bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full text-[10px] font-medium">LINK</span>
+                                    </div>
+                                </div>
+                                <button class="text-gray-400 hover:text-indigo-600 w-9 h-9 rounded-full flex items-center justify-center">
+                  <i class="fa-regular fa-bookmark"></i>
+                </button>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2">YouTube series with 34 videos covering orgo 1 & 2. Great for visual learners.</p>
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-4">
+                                    <button class="flex items-center gap-1.5 text-sm bg-gray-50 px-4 py-1.5 rounded-full border border-gray-200">
+                    <i class="fa-regular fa-thumbs-up"></i> 89
+                  </button>
+                                    <button class="flex items-center gap-1.5 text-sm text-gray-500">
+                    <i class="fa-regular fa-comment"></i> 7 comments
+                  </button>
+                                    <span class="text-sm text-gray-400 flex items-center gap-1"><i class="fa-regular fa-eye"></i> 1.2k</span>
+                                </div>
+                                <a href="#" class="text-sm font-medium text-indigo-600">Visit link →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== RESOURCE CARD 3 (image handwritten notes) ========= -->
+                <div class="bg-white rounded-2xl p-5 border border-gray-100/80 shadow-sm resource-card-hover">
+                    <div class="flex flex-wrap gap-3">
+                        <div class="flex-shrink-0 w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 border border-emerald-100">
+                            <i class="fa-regular fa-file-image text-2xl"></i>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="font-semibold text-gray-800 text-lg">Microeconomics – supply/demand diagrams (handwritten)</h3>
+                                    <div class="flex flex-wrap gap-3 text-xs text-gray-500 mt-1">
+                                        <span><i class="fa-regular fa-user"></i> Taylor K.</span>
+                                        <span><i class="fa-regular fa-calendar"></i> yesterday</span>
+                                        <span><i class="fa-regular fa-folder"></i> Economics / 1st year</span>
+                                        <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-[10px]">IMAGE</span>
+                                    </div>
+                                </div>
+                                <button class="text-gray-400 hover:text-indigo-600"><i class="fa-regular fa-bookmark text-xl"></i></button>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2">Clear, color-coded notes from econ 101 – perfect for visual revision. 5 jpegs.</p>
+                            <!-- thumbnail preview mock -->
+                            <div class="flex gap-2 mt-3">
+                                <div class="w-16 h-12 bg-gray-200 rounded-md border border-gray-300 flex items-center justify-center text-xs text-gray-500"><i class="fa-regular fa-image"></i> 5</div>
+                                <span class="text-xs text-gray-400 self-center">+ 4 more images</span>
+                            </div>
+                            <div class="flex items-center justify-between mt-3">
+                                <div class="flex items-center gap-4">
+                                    <button class="flex items-center gap-1.5 text-sm bg-gray-50 px-4 py-1.5 rounded-full border"><i class="fa-regular fa-thumbs-up"></i> 42</button>
+                                    <button class="flex items-center gap-1.5 text-sm text-gray-500"><i class="fa-regular fa-comment"></i> 5 comments</button>
+                                </div>
+                                <a href="#" class="text-sm text-indigo-600">Preview →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- load more -->
+                <div class="text-center pt-3">
+                    <button class="text-indigo-600 text-sm font-medium bg-indigo-50 px-7 py-2.5 rounded-full border border-indigo-200 hover:bg-indigo-100 transition inline-flex items-center gap-2">
+            <i class="fa-solid fa-rotate"></i> Load more resources
+          </button>
+                </div>
+
+                <!-- ===== comment section snippet (showing inside resource detail preview) ===== -->
+                <div class="mt-8 bg-gray-50/80 rounded-3xl p-6 border border-gray-200">
+                    <h4 class="font-semibold flex items-center gap-2 text-gray-800"><i class="fa-regular fa-comments"></i> Discussion on "CS50 past exam"</h4>
+                    <!-- comment -->
+                    <div class="mt-4 flex gap-3">
+                        <div class="w-8 h-8 rounded-full bg-indigo-200 flex-shrink-0 flex items-center justify-center text-xs font-bold text-indigo-900">JP</div>
+                        <div class="flex-grow">
+                            <div class="comment-bubble p-3 text-sm">
+                                <span class="font-medium text-gray-800">James P.</span>
+                                <span class="text-xs text-gray-500 ml-2">2 hours ago</span>
+                                <p class="text-gray-700 mt-1">Thanks! The solution for question 4 was really helpful. does anyone have more on dynamic programming?</p>
+                            </div>
+                            <div class="flex gap-4 mt-1 ml-1 text-xs text-gray-500">
+                                <button class="hover:text-indigo-600"><i class="fa-regular fa-thumbs-up"></i> 12</button>
+                                <button class="hover:text-indigo-600">Reply</button>
+                                <button class="hover:text-red-500">Edit</button>
+                                <button class="hover:text-red-500">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- second comment -->
+                    <div class="mt-4 flex gap-3">
+                        <div class="w-8 h-8 rounded-full bg-amber-200 flex-shrink-0 flex items-center justify-center text-xs font-bold">LK</div>
+                        <div class="flex-grow">
+                            <div class="comment-bubble p-3 text-sm">
+                                <span class="font-medium">Lina K.</span><span class="text-xs text-gray-500 ml-2">1 day ago</span>
+                                <p class="text-gray-700 mt-1">Does anyone have the formula sheet that goes with this? 🙏</p>
+                            </div>
+                            <div class="flex gap-4 mt-1 ml-1 text-xs text-gray-500">
+                                <button class="hover:text-indigo-600"><i class="fa-regular fa-thumbs-up"></i> 5</button>
+                                <button class="hover:text-indigo-600">Reply</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- add comment mock -->
+                    <div class="mt-5 flex gap-3">
+                        <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm">JD</div>
+                        <div class="flex-grow relative">
+                            <input type="text" placeholder="Add a comment..." class="w-full bg-white border border-gray-200 rounded-full py-2.5 px-5 pr-24 text-sm shadow-sm focus:ring-1 focus:ring-indigo-300 outline-none">
+                            <button class="absolute right-2 top-1.5 bg-indigo-600 text-white px-4 py-1 rounded-full text-xs hover:bg-indigo-700 transition">Post</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========= RIGHT SIDEBAR: dashboard & trending, leaderboard ========= -->
+            <div class="space-y-7">
+
+                <!-- user dashboard preview (bookmarked + uploaded) -->
+                <div class="bg-gradient-to-br from-indigo-50 to-white rounded-2xl p-5 border border-indigo-100 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-indigo-700 flex items-center justify-center text-white text-xl font-semibold">JD</div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Jessica Davis</h3>
+                            <p class="text-xs text-gray-600 flex items-center gap-1"><i class="fa-regular fa-building-columns"></i> Computer Science, 3rd year</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-5">
+                        <div class="bg-white/80 p-3 rounded-xl border border-indigo-200/60 text-center">
+                            <div class="text-indigo-700 font-bold">12</div>
+                            <div class="text-[11px] text-gray-600">uploaded</div>
+                        </div>
+                        <div class="bg-white/80 p-3 rounded-xl border border-indigo-200/60 text-center">
+                            <div class="text-indigo-700 font-bold">8</div>
+                            <div class="text-[11px] text-gray-600">bookmarked</div>
+                        </div>
+                    </div>
+                    <button class="w-full mt-4 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-sm py-2 rounded-xl font-medium flex items-center justify-center gap-2 border border-indigo-200"><i class="fa-regular fa-pen-to-square"></i> My dashboard</button>
+                </div>
+
+                <!-- trending resources (optional advanced) -->
+                <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-semibold flex items-center gap-2"><i class="fa-solid fa-fire-flame text-orange-500"></i> Trending now</h3>
+                        <span class="text-xs text-indigo-600">this week</span>
+                    </div>
+                    <div class="mt-3 space-y-4">
+                        <div class="flex gap-3">
+                            <span class="text-lg font-bold text-gray-300 w-5">1</span>
+                            <div class="flex-grow">
+                                <p class="text-sm font-medium">Data structures cheat sheet</p>
+                                <span class="text-xs text-gray-500">CS • 234 downloads</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <span class="text-lg font-bold text-gray-300 w-5">2</span>
+                            <div class="flex-grow">
+                                <p class="text-sm font-medium">Thermodynamics past exams</p>
+                                <span class="text-xs text-gray-500">Physics • 189 ❤️</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <span class="text-lg font-bold text-gray-300 w-5">3</span>
+                            <div class="flex-grow">
+                                <p class="text-sm font-medium">Marketing 101 flashcards</p>
+                                <span class="text-xs text-gray-500">Business • 112 saves</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- top contributors leaderboard -->
+                <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                    <h3 class="font-semibold flex items-center gap-2 mb-2"><i class="fa-solid fa-crown text-amber-500"></i> Top contributors</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-800">MK</div>
+                                <i class="fa-solid fa-circle-check text-green-500 absolute -bottom-0.5 -right-0.5 text-xs bg-white rounded-full"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium">Michael K.</p><span class="text-[11px] text-gray-500">42 resources</span></div>
+                            <span class="ml-auto text-xs bg-amber-100 px-2 py-0.5 rounded-full">🏅 1st</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center font-bold">SP</div>
+                            <div>
+                                <p class="text-sm font-medium">Sophia P.</p><span class="text-[11px] text-gray-500">38 resources</span></div>
+                            <span class="ml-auto text-xs bg-gray-100 px-2 py-0.5 rounded-full">2nd</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center font-bold">ER</div>
+                            <div>
+                                <p class="text-sm font-medium">Ethan R.</p><span class="text-[11px] text-gray-500">31 resources</span></div>
+                            <span class="ml-auto text-xs bg-gray-100 px-2 py-0.5 rounded-full">3rd</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- report / moderation hint (admin exists) -->
+                <div class="bg-red-50/40 rounded-2xl p-4 border border-red-200/60 text-xs text-gray-600">
+                    <div class="flex items-start gap-2">
+                        <i class="fa-regular fa-flag text-red-400 mt-0.5"></i>
+                        <span><span class="font-medium text-red-600">Report inappropriate content:</span> Seen something that violates guidelines? Flag it for our moderation team. </span>
+                    </div>
+                    <div class="flex gap-3 mt-2 ml-5">
+                        <button class="text-red-700 bg-white px-3 py-1 rounded-full border border-red-200 text-xs">Report this</button>
+                        <button class="text-gray-500 text-xs">Admin panel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== FOOTER (simple) ===== -->
+        <footer class="mt-16 pt-8 border-t border-gray-200 text-sm text-gray-500 flex flex-wrap justify-between">
+            <div class="flex items-center gap-1"><i class="fa-regular fa-graduation-cap"></i> StudyShare – collaborative learning space</div>
+            <div class="flex gap-6">
+                <span>© 2025</span>
+                <a href="#" class="hover:text-indigo-600">About</a>
+                <a href="#" class="hover:text-indigo-600">Guidelines</a>
+                <a href="#" class="hover:text-indigo-600">Moderation</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- subtle dark/light toggle mock (optional advanced) -->
+    <div class="fixed bottom-6 right-6 bg-white shadow-xl rounded-full p-2 border border-gray-200 hidden md:flex items-center gap-1">
+        <button class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center"><i class="fa-solid fa-sun"></i></button>
+        <button class="w-8 h-8 rounded-full text-gray-500 hover:bg-gray-100 flex items-center justify-center"><i class="fa-solid fa-moon"></i></button>
+    </div>
+    <!-- ------------------------js part----------------------------------- -->
+    <script>
+        /* ===============================
+                           LIKE BUTTON TOGGLE
+                        ================================= */
+        document.querySelectorAll(".fa-thumbs-up").forEach(icon => {
+            icon.parentElement.addEventListener("click", function() {
+                const countText = this.innerText.trim();
+                const number = parseInt(countText.replace(/\D/g, "")) || 0;
+
+                if (this.classList.contains("liked")) {
+                    this.classList.remove("liked");
+                    this.classList.remove("text-indigo-600");
+                    this.innerHTML = `<i class="fa-regular fa-thumbs-up"></i> ${number - 1}`;
+                } else {
+                    this.classList.add("liked");
+                    this.classList.add("text-indigo-600");
+                    this.innerHTML = `<i class="fa-solid fa-thumbs-up"></i> ${number + 1}`;
+                }
+            });
+        });
+
+
+        /* ===============================
+           BOOKMARK TOGGLE
+        ================================= */
+        document.querySelectorAll(".fa-bookmark").forEach(icon => {
+            icon.parentElement.addEventListener("click", function() {
+                const iconElement = this.querySelector("i");
+
+                if (iconElement.classList.contains("fa-solid")) {
+                    iconElement.classList.remove("fa-solid");
+                    iconElement.classList.add("fa-regular");
+                    this.classList.remove("text-indigo-600");
+                } else {
+                    iconElement.classList.remove("fa-regular");
+                    iconElement.classList.add("fa-solid");
+                    this.classList.add("text-indigo-600");
+                }
+            });
+        });
+
+
+        /* ===============================
+           ADD COMMENT
+        ================================= */
+        const postBtn = document.querySelector("button.absolute");
+        const commentInput = document.querySelector("input[placeholder='Add a comment...']");
+        const commentSection = document.querySelector(".comment-bubble").parentElement.parentElement.parentElement;
+
+        postBtn.addEventListener("click", function() {
+            const text = commentInput.value.trim();
+            if (text === "") return;
+
+            const newComment = document.createElement("div");
+            newComment.className = "mt-4 flex gap-3";
+
+            newComment.innerHTML = `
+    <div class="w-8 h-8 rounded-full bg-indigo-200 flex-shrink-0 flex items-center justify-center text-xs font-bold text-indigo-900">JD</div>
+    <div class="flex-grow">
+      <div class="comment-bubble p-3 text-sm">
+        <span class="font-medium text-gray-800">You</span>
+        <span class="text-xs text-gray-500 ml-2">just now</span>
+        <p class="text-gray-700 mt-1">${text}</p>
+      </div>
+    </div>
+  `;
+
+            commentSection.insertBefore(newComment, commentSection.lastElementChild);
+            commentInput.value = "";
+        });
+
+
+        /* ===============================
+           DARK / LIGHT MODE
+        ================================= */
+        const sunBtn = document.querySelector(".fa-sun").parentElement;
+        const moonBtn = document.querySelector(".fa-moon").parentElement;
+
+        sunBtn.addEventListener("click", () => {
+            document.body.classList.remove("bg-gray-900", "text-white");
+            document.body.classList.add("bg-white", "text-gray-800");
+            localStorage.setItem("theme", "light");
+        });
+
+        moonBtn.addEventListener("click", () => {
+            document.body.classList.add("bg-gray-900", "text-white");
+            localStorage.setItem("theme", "dark");
+        });
+
+        window.addEventListener("DOMContentLoaded", () => {
+            if (localStorage.getItem("theme") === "dark") {
+                document.body.classList.add("bg-gray-900", "text-white");
+            }
+        });
+
+
+        /* ===============================
+           SIMPLE SEARCH FILTER
+        ================================= */
+        const searchInput = document.querySelector("input[type='text']");
+        const cards = document.querySelectorAll(".resource-card-hover");
+
+        searchInput.addEventListener("input", function() {
+            const value = this.value.toLowerCase();
+
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(value) ? "block" : "none";
+            });
+        });
+    </script>
+
+</body>
+
+</html>
